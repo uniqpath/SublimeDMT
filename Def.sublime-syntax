@@ -1,0 +1,21 @@
+%YAML 1.2
+---
+name: def
+file_extensions: [def]
+scope: source.def
+
+contexts:
+  main:
+    - match: "^\\s*\\#.*?$"
+      scope: comment
+    - match: "^\\s*---\\s*$"
+      scope: comment
+    - match: "^(\\S.*?\\:)(.*?)$"
+      captures:
+        1: constant.language
+        2: keyword
+    - match: "^(\\s.*?\\:)(.*?)$"
+      captures:
+        1: constant.language
+        2: string.unquoted
+
