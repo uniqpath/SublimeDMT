@@ -1,21 +1,83 @@
 %YAML 1.2
 ---
-name: def
+name: DMT
 file_extensions: [def]
 scope: source.def
 
+variables:
+  identifier: '(?:[A-Za-z_\-]\w*)'
+  number: '(?:[+-]?\d[\d_e]*(?:\.\d+)?)'
+  truth: '\b(true|false)\b'
+
 contexts:
   main:
-    - match: "^\\s*\\#.*?$"
-      scope: comment
+    - match: (?=\S)
+      push: definition
+
+  # helpers
+
+  else-pop:
+    - match: (?=\S)
+      pop: true
+
+  eol-pop:
+    - match: \n
+      pop: true
+
+  # number
+
+  number:
+    - match: '{{number}}'
+      scope: constant.numeric
+
+  # *** DEFINITION ***
+
+  definition:
     - match: "^\\s*---\\s*$"
       scope: comment
-    - match: "^(\\S.*?\\:)(.*?)$"
-      captures:
-        1: constant.language
-        2: keyword
-    - match: "^(\\s.*?\\:)(.*?)$"
-      captures:
-        1: constant.language
-        2: string.unquoted
+    # top level
+    - match: "^{{identifier}}\\:"
+      scope: constant.language
+      push: values-high
+    # second level
+    - match: "^\\s\\s{{identifier}}\\:"
+      scope: constant.language
+      push: values-high
+    # # the rest
+    - match: "^\\s+{{identifier}}\\:"
+      scope: support.function
+      push: values
 
+  common-values:
+    - match: \b{{number}}\b
+      scope: constant.numeric
+    - match: "{{truth}}"
+      scope: constant.language
+    - match: \@{{identifier}}\/{{identifier}}
+      scope: variable.parameter
+    - match: \@{{identifier}}
+      scope: variable.parameter
+
+  values:
+    - include: common-values
+    - match: "{{identifier}}"
+    - include: eol-pop
+
+  values-high:
+    - include: common-values
+    - match: "{{identifier}}"
+      scope: keyword
+    - include: eol-pop
+
+  # comments
+
+  prototype:
+    - include: comments
+
+  comments:
+    - match: \#
+      scope: comment
+      push:
+        - match: .*?$
+          scope: comment
+          pop: true
