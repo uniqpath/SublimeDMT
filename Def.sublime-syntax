@@ -9,10 +9,10 @@ variables:
 
   number: '(?:[+-]?\d[\d_e]*(?:\.\d+)?)'
 
-  ip_address: '\b{{number}}+\.{{number}}+\.{{number}}+\.{{number}}+\b'
-
   hex_digit: '[0-9a-fA-F]'
   hex_number: '(?:[+-]?(0[Xx]){{hex_digit}}*)'
+
+  ip_address: '\b{{number}}+\.{{number}}+\.{{number}}+\.{{number}}+\b'
   mac_address: '{{hex_digit}}+\:{{hex_digit}}+\:{{hex_digit}}+\:{{hex_digit}}+\:{{hex_digit}}+\:{{hex_digit}}+'
 
   truth: '\b(true|false)\b'
