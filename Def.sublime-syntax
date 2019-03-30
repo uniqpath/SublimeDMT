@@ -6,7 +6,15 @@ scope: source.def
 
 variables:
   identifier: '(?:[A-Za-z_\-]\w*)'
+
   number: '(?:[+-]?\d[\d_e]*(?:\.\d+)?)'
+
+  ip_address: '\b{{number}}+\.{{number}}+\.{{number}}+\.{{number}}+\b'
+
+  hex_digit: '[0-9a-fA-F]'
+  hex_number: '(?:[+-]?(0[Xx]){{hex_digit}}*)'
+  mac_address: '{{hex_digit}}+\:{{hex_digit}}+\:{{hex_digit}}+\:{{hex_digit}}+\:{{hex_digit}}+\:{{hex_digit}}+'
+
   truth: '\b(true|false)\b'
 
 contexts:
@@ -24,12 +32,6 @@ contexts:
     - match: \n
       pop: true
 
-  # number
-
-  number:
-    - match: '{{number}}'
-      scope: constant.numeric
-
   # *** DEFINITION ***
 
   definition:
@@ -38,18 +40,24 @@ contexts:
     # top level
     - match: "^{{identifier}}\\:"
       scope: constant.language
-      push: values-high
+      push: values-highest
     # second level
     - match: "^\\s\\s{{identifier}}\\:"
       scope: constant.language
       push: values-high
-    # # the rest
+    # the rest
     - match: "^\\s+{{identifier}}\\:"
       scope: support.function
       push: values
 
   common-values:
+    - match: \b{{ip_address}}\b
+      scope: variable.parameter
+    - match: \b{{mac_address}}\b
+      scope: variable.parameter
     - match: \b{{number}}\b
+      scope: constant.numeric
+    - match: \b{{hex_number}}\b
       scope: constant.numeric
     - match: "{{truth}}"
       scope: constant.language
@@ -66,6 +74,12 @@ contexts:
     - include: common-values
     - match: "{{identifier}}"
       scope: keyword
+    - include: eol-pop
+
+  values-highest:
+    - include: common-values
+    - match: "{{identifier}}"
+      scope: entity.name.class
     - include: eol-pop
 
   # comments
