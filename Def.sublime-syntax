@@ -6,6 +6,7 @@ scope: source.def
 
 variables:
   identifier: '(?:[A-Za-z_\-]\w*)'
+  keyword: '\b(from)\b'
 
   number: '(?:[+-]?\d[\d_e]*(?:\.\d+)?)'
 
@@ -39,11 +40,11 @@ contexts:
       scope: comment
     # top level
     - match: "^{{identifier}}\\:"
-      scope: constant.language
+      scope: support.function
       push: values-highest
     # second level
     - match: "^\\s\\s{{identifier}}\\:"
-      scope: constant.language
+      scope: support.function
       push: values-high
     # the rest
     - match: "^\\s+{{identifier}}\\:"
@@ -52,34 +53,34 @@ contexts:
 
   common-values:
     - match: \b{{ip_address}}\b
-      scope: variable.parameter
+      scope: constant.numeric
     - match: \b{{mac_address}}\b
-      scope: variable.parameter
+      scope: constant.numeric
     - match: \b{{number}}\b
       scope: constant.numeric
     - match: \b{{hex_number}}\b
       scope: constant.numeric
     - match: "{{truth}}"
       scope: constant.language
+    - match: "{{keyword}}"
+      scope: keyword
     - match: \@{{identifier}}
-      scope: variable.parameter
+      scope: keyword
 
   values:
     - include: common-values
     - match: "{{identifier}}"
-      scope: string.unquoted
     - include: eol-pop
 
   values-high:
     - include: common-values
     - match: "{{identifier}}"
-      scope: keyword
     - include: eol-pop
 
   values-highest:
     - include: common-values
     - match: "{{identifier}}"
-      scope: entity.name.class
+      scope: keyword
     - include: eol-pop
 
   # comments
