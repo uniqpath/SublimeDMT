@@ -40,7 +40,7 @@ contexts:
       scope: comment
     # top level
     - match: "^{{identifier}}\\:"
-      scope: support.function
+      scope: support.type
       push: values-highest
     # second level
     - match: "^\\s\\s{{identifier}}\\:"
