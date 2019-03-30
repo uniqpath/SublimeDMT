@@ -6,7 +6,8 @@ scope: source.def
 
 variables:
   identifier: '(?:[A-Za-z_\-]\w*)'
-  keyword: '\b(from)\b'
+  operator: '(\*)'
+  from_operator: '\b(from)\b'
 
   number: '(?:[+-]?\d[\d_e]*(?:\.\d+)?)'
 
@@ -46,7 +47,7 @@ contexts:
     - match: "^\\s\\s{{identifier}}\\:"
       scope: support.function
       push: values-high
-    # the rest
+    # further
     - match: "^\\s+{{identifier}}\\:"
       scope: support.function
       push: values
@@ -62,25 +63,49 @@ contexts:
       scope: constant.numeric
     - match: "{{truth}}"
       scope: constant.language
-    - match: "{{keyword}}"
+    - match: "({{identifier}}) .*?({{from_operator}})"
+      captures:
+        1: keyword
+        2: keyword.operator
+    - match: "{{from_operator}}"        # example: "music [from] content.def"
       scope: keyword
-    - match: \@{{identifier}}
+    - match: "{{operator}}"             # example: "* [from] content.def"
       scope: keyword
+    - match: \@{{identifier}}           # devices, examples: @lab, @room, @tablet_one, @myserver, @outside
+      scope: keyword
+    - match: \+{{identifier}}           # lists of various things, for example +family (is a list of people)
+      scope: string.unquoted
+    - match: \~({{identifier}}|\/|\.)+  # relative paths, examples: ~/Storage, ~/Music
+      scope: string.unquoted
+    - match: \{{{identifier}}\}         # people, examples: {john}, {maryjane}
+      scope: support.type
+    - match: "{{identifier}}\\.def"     # referenced .def files, example: "music [from] content.def"
+      scope: entity.name.class
 
-  values:
+  # top level of each .def file, example:
+  # device: name
+  #   ...
+  #
+  # (happens at indent 0 once or multiple times per file)
+  values-highest:
     - include: common-values
     - match: "{{identifier}}"
+      scope: keyword
     - include: eol-pop
 
+  # second level
   values-high:
     - include: common-values
     - match: "{{identifier}}"
     - include: eol-pop
 
-  values-highest:
+  # all the next levels
+  # notice we don't distinguish between second level and "further down"
+  # we keep it in file as a reminder of experimenting with different colorings but it didn't work well
+  # try and see within a fork if you want
+  values:
     - include: common-values
     - match: "{{identifier}}"
-      scope: keyword
     - include: eol-pop
 
   # comments
