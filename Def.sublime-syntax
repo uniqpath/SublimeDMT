@@ -53,14 +53,13 @@ contexts:
       scope: constant.numeric
     - match: "{{truth}}"
       scope: constant.language
-    - match: \@{{identifier}}\/{{identifier}}
-      scope: variable.parameter
     - match: \@{{identifier}}
       scope: variable.parameter
 
   values:
     - include: common-values
     - match: "{{identifier}}"
+      scope: string.unquoted
     - include: eol-pop
 
   values-high:
