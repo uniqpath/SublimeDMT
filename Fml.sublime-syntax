@@ -1,8 +1,8 @@
 %YAML 1.2
 ---
-name: DMT
-file_extensions: [def]
-scope: source.def
+name: FML
+file_extensions: [fml]
+scope: source.fml
 
 variables:
   identifier: '(?:\w[\w\-]*)'
@@ -22,7 +22,7 @@ variables:
 contexts:
   main:
     - match: (?=\S)
-      push: definition
+      push: markup
 
   # helpers
 
@@ -36,23 +36,56 @@ contexts:
 
   # *** DEFINITION ***
 
-  definition:
+  markup:
     - match: "^\\s*---\\s*$"
       scope: comment
+    - match: "^--\\s*"
+      scope: constant.language
+      push: demarcation
+    - match: "^  :\\s*"
+      scope: constant.language
+      push: menu-item
     # top level
-    - match: "^{{identifier}}\\:"
-      scope: support.type
-      push: values-highest
-    # second level
-    - match: "^\\s\\s{{identifier}}\\:"
-      scope: support.function
-      push: values-high
-    # further
-    - match: "^\\s+{{identifier}}\\:"
-      scope: support.function
-      push: values
+    - include: angle_brackets
+
+  demarcation:
+    - match: ','
+      scope: constant.language
+    - include: eol-pop
+    - include: common-values
+
+  menu-item:
+    - include: eol-pop
+    - match: \bfrom\b
+      scope: constant.language
+    - include: fs_path
+
+  fs_path:
+    - match: \.\/[-\w\/\.]+
+      scope: variable.parameter.function
+
+  angle_brackets:
+    - match: \<
+      scope: comment
+      push: angle_bracket_contents
+
+  angle_bracket_contents:
+    - match: \>
+      scope: comment
+      pop: true
+    - match: .
+      scope: comment
 
   common-values:
+    - match: \b(else|end|menu|image|logo|include|through|random)\b
+      scope: constant.language
+    - match: \b(public|loggedIn)\b
+      scope: keyword
+    - match: \b(preformatted|wide|justify|smallerTextOnMobile)\b
+      scope: constant.language
+    - match: \:\w+
+      scope: support.type
+    - include: fs_path
     - match: \b{{ip_address}}\b
       scope: constant.numeric
     - match: \b{{mac_address}}\b
@@ -118,8 +151,7 @@ contexts:
     - include: comments
 
   comments:
-    - match: \\\# # we may use \# in definition files when we actually need the hash sign
-    - match: \#
+    - match: --\#
       scope: comment
       push:
         - match: .*?$
